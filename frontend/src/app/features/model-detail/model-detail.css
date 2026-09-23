@@ -1,0 +1,129 @@
+.view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.title-group {
+  display: flex;
+  align-items: center;
+}
+
+.title-group h2 {
+  margin: 0 16px 0 8px;
+  font-weight: 300;
+  font-size: 24px;
+}
+
+.framework-badge {
+  background: #e0e0e0;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #424242;
+  text-transform: uppercase;
+}
+
+.overview-card {
+  margin-bottom: 24px;
+}
+
+.overview-card p {
+  margin: 8px 0;
+}
+
+.tab-content {
+  padding: 24px 0;
+}
+
+table {
+  width: 100%;
+}
+
+.actions-cell {
+  text-align: right;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 48px;
+}
+
+.text-muted {
+  color: #757575;
+  font-style: italic;
+  padding: 24px;
+  text-align: center;
+}
+
+.metrics-summary {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: #f5f5f5;
+  border-radius: 8px;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.summary-label {
+  font-size: 11px;
+  color: #757575;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summary-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: #212121;
+}
+
+.status-badge {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-healthy {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-degraded {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.status-drifting {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.env-badge {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.env-production {
+  background: #ede7f6;
+  color: #4527a0;
+}
+
+.env-staging {
+  background: #e3f2fd;
+  color: #1565c0;
+}
