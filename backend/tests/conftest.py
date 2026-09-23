@@ -1,11 +1,14 @@
 """
 conftest.py — shared pytest fixtures.
 
-Key responsibility: ensure the `simulate_deployment` background task uses the
-same in-memory SQLite session as the rest of the test suite, not the real
-PostgreSQL SessionLocal. Without this patch, any test that triggers
-POST /deployments will fail in CI because the background task tries to open
-a connection to localhost:5432.
+Key responsibilities:
+1. Ensure the `simulate_deployment` background task uses the same in-memory
+   SQLite session as the rest of the test suite (not the real PostgreSQL
+   SessionLocal).
+2. Disable `simulate_deployment` entirely during unit/integration tests.
+   FastAPI's TestClient runs BackgroundTasks *synchronously* after the
+   response is returned, so without this patch the deployment sleeps 10s and
+   transitions to SUCCEEDED/FAILED before any test assertion runs.
 """
 import pytest
 from unittest.mock import patch
@@ -29,7 +32,13 @@ Base.metadata.create_all(bind=engine)
 
 
 @pytest.fixture(autouse=True)
-def patch_deployment_session():
-    """Patch the SessionLocal used inside simulate_deployment so it uses SQLite."""
-    with patch("app.routers.deployments.SessionLocal", TestingSessionLocal):
+def patch_deployment_internals():
+    """
+    - Patch SessionLocal so the background task uses SQLite, not PostgreSQL.
+    - Patch simulate_deployment to a no-op so deployment status stays at
+      REQUESTED after POST /deployments (tests manipulate state directly).
+    """
+    with patch("app.routers.deployments.SessionLocal", TestingSessionLocal), \
+         patch("app.routers.deployments.simulate_deployment", lambda *args, **kwargs: None):
         yield
+
