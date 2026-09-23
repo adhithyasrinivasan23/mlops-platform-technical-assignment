@@ -8,15 +8,9 @@ from app.main import app as fastapi_app
 from app.database import Base, get_db
 import app.models
 
-# Use in-memory sqlite for tests
-SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
-
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, 
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool
-)
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# Re-use the same in-memory SQLite engine defined in conftest.py so that the
+# test client and the patched simulate_deployment background task share state.
+from tests.conftest import TestingSessionLocal, engine
 
 Base.metadata.create_all(bind=engine)
 
