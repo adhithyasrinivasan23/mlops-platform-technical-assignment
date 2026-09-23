@@ -42,6 +42,20 @@ def simulate_deployment(deployment_id: str, simulate_failure: bool = False):
 
 @router.post("", response_model=schemas.Deployment, status_code=202)
 def create_deployment(deployment: schemas.DeploymentCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    # Check for existing deployment first to avoid kicking off redundant background tasks
+    existing = db.query(Deployment).filter(
+        Deployment.model_version_id == deployment.model_version_id,
+        Deployment.environment == deployment.environment,
+        Deployment.status.in_([
+            DeploymentStatusEnum.REQUESTED,
+            DeploymentStatusEnum.VALIDATING,
+            DeploymentStatusEnum.DEPLOYING,
+            DeploymentStatusEnum.SUCCEEDED
+        ])
+    ).first()
+    if existing:
+        return existing
+        
     db_deployment = crud.create_deployment(db=db, deployment=deployment)
     background_tasks.add_task(simulate_deployment, db_deployment.id, deployment.simulate_failure)
     return db_deployment
