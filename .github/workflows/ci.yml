@@ -67,6 +67,8 @@ jobs:
       run: |
         cd frontend
         npx playwright install --with-deps
+    - name: Set up environment variables
+      run: cp .env.example .env
     - name: Build and Start Containers
       run: docker compose up -d --build
     - name: Wait for services to be ready
