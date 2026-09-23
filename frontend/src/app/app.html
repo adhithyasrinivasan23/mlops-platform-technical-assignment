@@ -1,0 +1,18 @@
+<div class="app-container">
+  <mat-toolbar color="primary" class="app-header">
+    <mat-icon class="logo-icon">precision_manufacturing</mat-icon>
+    <span>MLOps Platform</span>
+    <span class="spacer"></span>
+    
+    <button mat-button routerLink="/models" routerLinkActive="active-link">
+      <mat-icon>inventory_2</mat-icon> Models
+    </button>
+    <button mat-button routerLink="/deployments" routerLinkActive="active-link">
+      <mat-icon>rocket_launch</mat-icon> Deployments
+    </button>
+  </mat-toolbar>
+
+  <main class="content-area">
+    <router-outlet></router-outlet>
+  </main>
+</div>
