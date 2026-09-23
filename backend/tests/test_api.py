@@ -98,8 +98,8 @@ def test_duplicate_deployment_idempotency():
         json={"model_version_id": version_id, "environment": "staging"}
     )
     assert dep1.status_code == 202
-    
-    # Second deploy (should be idempotent)
+
+    # Second deploy for same version+env while first is in-flight: must return same deployment
     dep2 = client.post(
         "/deployments",
         json={"model_version_id": version_id, "environment": "staging"}
@@ -130,10 +130,13 @@ def test_retry_deployment_rules():
     assert retry1.status_code == 400
 
     # Fail it directly in DB
-    with TestingSessionLocal() as db:
+    db = TestingSessionLocal()
+    try:
         from app.crud import update_deployment_status
         from app.models import DeploymentStatusEnum
         update_deployment_status(db, dep_id, DeploymentStatusEnum.FAILED)
+    finally:
+        db.close()
     
     # Retry now should succeed
     retry2 = client.post(f"/deployments/{dep_id}/retry")
@@ -163,10 +166,13 @@ def test_rollback_deployment_rules():
     assert rollback1.status_code == 400
 
     # Succeed it directly in DB
-    with TestingSessionLocal() as db:
+    db = TestingSessionLocal()
+    try:
         from app.crud import update_deployment_status
         from app.models import DeploymentStatusEnum
         update_deployment_status(db, dep_id, DeploymentStatusEnum.SUCCEEDED)
+    finally:
+        db.close()
     
     # Rollback now should succeed
     rollback2 = client.post(f"/deployments/{dep_id}/rollback")
@@ -190,12 +196,15 @@ def test_end_to_end_scenario():
     version_id = version_res.json()["id"]
 
     # 3. Approve version (Simulating by updating the DB)
-    with TestingSessionLocal() as db:
+    db = TestingSessionLocal()
+    try:
         from app.models import ModelVersion
         v = db.query(ModelVersion).filter_by(id=version_id).first()
         v.approved = True
         v.stage = "PRODUCTION"
         db.commit()
+    finally:
+        db.close()
 
     # 4. Deploy to production
     dep_res = client.post(
@@ -211,10 +220,13 @@ def test_end_to_end_scenario():
     assert metrics_res.json() == []
 
     # 6. Roll back (First simulate success)
-    with TestingSessionLocal() as db:
+    db = TestingSessionLocal()
+    try:
         from app.crud import update_deployment_status
         from app.models import DeploymentStatusEnum
         update_deployment_status(db, dep_id, DeploymentStatusEnum.SUCCEEDED)
+    finally:
+        db.close()
     
     rb_res = client.post(f"/deployments/{dep_id}/rollback")
     assert rb_res.status_code == 200

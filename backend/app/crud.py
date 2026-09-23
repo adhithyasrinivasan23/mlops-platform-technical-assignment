@@ -84,6 +84,21 @@ def create_deployment(db: Session, deployment: schemas.DeploymentCreate):
         raise HTTPException(status_code=400, detail="Cannot deploy an unapproved model version")
     if db_version.stage == models.StageEnum.ARCHIVED:
         raise HTTPException(status_code=400, detail="Cannot deploy an archived model version")
+
+    # Idempotency: if an in-flight deployment already exists for this version+environment, return it
+    in_flight_statuses = [
+        models.DeploymentStatusEnum.REQUESTED,
+        models.DeploymentStatusEnum.VALIDATING,
+        models.DeploymentStatusEnum.DEPLOYING,
+    ]
+    existing = db.query(models.Deployment).filter(
+        models.Deployment.model_version_id == deployment.model_version_id,
+        models.Deployment.environment == deployment.environment,
+        models.Deployment.status.in_(in_flight_statuses)
+    ).first()
+    if existing:
+        return existing
+
     deployment_id = f"dep-{uuid.uuid4().hex[:8]}"
     db_deployment = models.Deployment(
         id=deployment_id,
