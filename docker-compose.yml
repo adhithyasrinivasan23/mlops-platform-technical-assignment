@@ -10,6 +10,16 @@ services:
       db:
         condition: service_healthy
 
+  backend-test:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    volumes:
+      - ./backend:/app
+    entrypoint: pytest
+    profiles:
+      - testing
+
   frontend:
     build: ./frontend
     ports: ["4200:80"]

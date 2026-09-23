@@ -36,20 +36,38 @@ The entire application runs in isolated, orchestrated Docker containers for iden
 ## Test Commands
 A comprehensive test suite validates end-to-end functionality, from backend business logic to component rendering and automated browser interaction.
 
+### Option 1: Run via Docker (Recommended)
+If you don't want to install Node.js or Python locally, you can run the tests inside isolated, ephemeral Docker containers:
+
 - **Backend (Unit & Integration):** 
   ```bash
-  cd backend
-  pytest
+  docker compose run --rm backend-test
   ```
 - **Frontend (Component Tests):**
   ```bash
-  cd frontend
-  npm run test
+  docker run --rm -v $(pwd)/frontend:/app -w /app mcr.microsoft.com/playwright:v1.49.0-noble bash -c "npm install --legacy-peer-deps && npm run test -- --watch=false"
+  ```
+- **Frontend (Playwright E2E):**
+  *(Note: Ensure the platform is running via `docker compose up -d` first so Playwright can reach `http://localhost:4200`)*
+  ```bash
+  docker run --rm --network host -v $(pwd)/frontend:/app -w /app mcr.microsoft.com/playwright:v1.49.0-noble bash -c "npm install --legacy-peer-deps && npx playwright test"
+  ```
+  *(On macOS, `--network host` doesn't expose localhost. Instead, use: `docker run --rm -e PLAYWRIGHT_BASE_URL=http://host.docker.internal:4200 -v $(pwd)/frontend:/app -w /app mcr.microsoft.com/playwright:v1.49.0-noble bash -c "npm install --legacy-peer-deps && npx playwright test"`)*
+
+### Option 2: Run Locally
+If you have the dependencies installed on your host machine:
+
+- **Backend (Unit & Integration):** 
+  ```bash
+  cd backend && pytest
+  ```
+- **Frontend (Component Tests):**
+  ```bash
+  cd frontend && npm run test
   ```
 - **Frontend (Playwright E2E):**
   ```bash
-  cd frontend
-  npx playwright test
+  cd frontend && npx playwright test
   ```
 
 ## API Documentation Location
